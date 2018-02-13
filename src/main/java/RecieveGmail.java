@@ -1,10 +1,15 @@
 import javax.mail.*;
+import javax.mail.internet.MimeBodyPart;
+import java.io.File;
 import java.util.Properties;
 
 public class RecieveGmail {
 
+    private static String saveDirectory = "D:/Downloads/Attachments";
+
+
     public static void check(String host, String storeType, String user,
-                                                   String password)
+                             String password)
 {
     try {
 
@@ -29,13 +34,52 @@ public class RecieveGmail {
         Message[] messages = emailFolder.getMessages();
         System.out.println("messages.length---" + messages.length);
 
-        for (int i = 0, n = messages.length; i < n; i++) {
+//        for (int i = 0, n = messages.length; i < 1; i++) {
+        for (int i = messages.length-1 ; i == messages.length-1; i++) {
+
             Message message = messages[i];
             System.out.println("---------------------------------");
             System.out.println("Email Number " + (i + 1));
             System.out.println("Subject: " + message.getSubject());
             System.out.println("From: " + message.getFrom()[0]);
             System.out.println("Text: " + message.getContent().toString());
+            System.out.println(message.getContent());
+
+            String contentType = message.getContentType();
+            String messageContent = "";
+
+            // store attachment file name, separated by comma
+            String attachFiles = "";
+
+            if (contentType.contains("multipart")) {
+                // content may contain attachments
+                Multipart multiPart = (Multipart) message.getContent();
+                int numberOfParts = multiPart.getCount();
+                for (int partCount = 0; partCount < numberOfParts; partCount++) {
+                    MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
+                    if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+                        // this part is attachment
+                        String fileName = part.getFileName();
+                        attachFiles += fileName + ", ";
+                        part.saveFile(saveDirectory + File.separator + fileName);
+                    } else {
+                        // this part may be the message content
+                        messageContent = part.getContent().toString();
+                    }
+                }
+
+                if (attachFiles.length() > 1) {
+                    attachFiles = attachFiles.substring(0, attachFiles.length() - 2);
+                }
+            } else if (contentType.contains("text/plain")
+                    || contentType.contains("text/html")) {
+                Object content = message.getContent();
+                if (content != null) {
+                    messageContent = content.toString();
+                }
+            }
+
+
 
         }
 
