@@ -47,23 +47,20 @@ public class RecieveGmail {
         }
     }
 
-    public void sent(Session session) throws MessagingException {
+    public void sent(Session session, String sender) throws MessagingException {
+
+        String fromEmail = sender.substring(sender.indexOf("<") + 1, sender.indexOf(">"));
+        String fromName = sender.substring(0,sender.indexOf("<"));
 
         MimeMessage message = new MimeMessage(session);
 
         try {
             message.setFrom(new InternetAddress("nature2578@gmail.com"));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress("whibleykevin@gmail.com"));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(fromEmail));
             message.setSubject("Test");
-            message.setText("Bla");
+            message.setText(fromName + ", thank you for your file.");
 
             Transport.send(message);
-
-            /*Transport transport = new session.getTransport("smtp");
-            transport.connect("smtp.gmail.com","nature2578","srtsrvts123");
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();*/
-
 
         } catch (AddressException e) {
             e.getMessage();
@@ -93,8 +90,6 @@ public class RecieveGmail {
                 }
             });
 
-            // props.load(new FileInputStream(new File("C:\\Users\\Cagy\\IdeaProjects\\chelexmail4\\smtp.properties")));
-            //Session session = Session.getDefaultInstance(props);
 
             Store store = session.getStore("imaps");
             store.connect("smtp.gmail.com", "nature2578", "srtsrvts123");
@@ -114,12 +109,16 @@ public class RecieveGmail {
             System.out.println("Subject: " + message.getSubject());
             System.out.println("From: " + message.getFrom()[0]);
             System.out.println("Text: " + message.getContent().toString());
+            /*System.out.println(message.getFrom()[0].toString().substring(message.getFrom()[0].toString().indexOf("<") + 1,
+                                    message.getFrom()[0].toString().indexOf(">")))*/
+            ;
 
-            downloadAttachment(message);
-            sent(session);
 
             inbox.close(true);
             store.close();
+
+            //downloadAttachment(message);
+            sent(session, message.getFrom()[0].toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,7 +127,7 @@ public class RecieveGmail {
 
     public static void main(String[] args) {
 
-       RecieveGmail gmail = new RecieveGmail();
+        RecieveGmail gmail = new RecieveGmail();
         gmail.read();
 
     }
