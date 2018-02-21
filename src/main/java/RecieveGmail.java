@@ -1,8 +1,12 @@
+import sun.misc.resources.Messages;
+
 import javax.mail.*;
+import javax.mail.Flags.Flag;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.FlagTerm;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -90,45 +94,61 @@ public class RecieveGmail {
                 }
             });
 
-
             Store store = session.getStore("imaps");
             store.connect("smtp.gmail.com", "nature2578", "srtsrvts123");
 
+
+
             Folder inbox = store.getFolder("inbox");
-            inbox.open(Folder.READ_ONLY);
-            int messageCount = inbox.getMessageCount();
+            inbox.open(Folder.READ_WRITE);
 
-            System.out.println("Total Messages:- " + messageCount);
+            /*Flags seen = new Flags(Flag.SEEN);*/
+            FlagTerm unSeenFlagTern = new FlagTerm(new Flags(Flag.SEEN), false);
 
-            Message[] messages = inbox.getMessages();
+            Message[] unreadMessages = inbox.search(unSeenFlagTern);
+            //System.out.println( "Get unread message count:  " + inbox.getUnreadMessageCount());
+            System.out.println("Unread messages:  " + unreadMessages.length);
+            System.out.println("Read messages and download attachments...");
+
+            for (int i = 0; i < unreadMessages.length; i++) {
+                unreadMessages[i].setFlag(Flag.SEEN, true);
+            }
+            Message[] unreadMessagesAfter = inbox.search(unSeenFlagTern);
+            System.out.println("Unread messages:  " + unreadMessagesAfter.length);
+
+
+            System.out.println("Total Messages: " + inbox.getMessageCount());
+
+           /* Message[] inboxMessages = inbox.getMessages();
             System.out.println("------------------------------");
 
-
-            Message message = messages[messages.length - 1];
-            System.out.println("Email Number " + (messages.length));
+            Message message = inboxMessages[inboxMessages.length - 1];
+            System.out.println("Email Number " + (inboxMessages.length));
             System.out.println("Subject: " + message.getSubject());
             System.out.println("From: " + message.getFrom()[0]);
             System.out.println("Text: " + message.getContent().toString());
-            /*System.out.println(message.getFrom()[0].toString().substring(message.getFrom()[0].toString().indexOf("<") + 1,
-                                    message.getFrom()[0].toString().indexOf(">")))*/
-            ;
+            *//*System.out.println(message.getFrom()[0].toString().substring(message.getFrom()[0].toString().indexOf("<") + 1,
+                                    message.getFrom()[0].toString().indexOf(">")))*//*
+            ;*/
 
 
             inbox.close(true);
             store.close();
 
             //downloadAttachment(message);
-            sent(session, message.getFrom()[0].toString());
+            //sent(session, message.getFrom()[0].toString());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+/*
     public static void main(String[] args) {
 
         RecieveGmail gmail = new RecieveGmail();
         gmail.read();
 
     }
+*/
 }
