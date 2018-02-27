@@ -93,7 +93,7 @@ public class RecieveGmail {
             });
 
             Store store = session.getStore("imaps");
-            store.connect("smtp.gmail.com", "nature2578", "srtsrvts123");
+            store.connect("smtp.gmail.com", "********", "********");
 
 
 
